@@ -106,7 +106,9 @@ val Data = """(?<id>[^-]+)-(?<sub>.):(?<value>\d+)""".regex
 Now we can access these names as methods on the match:
 
 ``` scala
-val result = Data.parse("foobar-Z:12345").getOrElse(sys.error("Do the right thing here."))
+val result = Data.parse("foobar-Z:12345").getOrElse(
+  sys.error("Do the right thing here, please.")
+)
 ```
 
 And then:
