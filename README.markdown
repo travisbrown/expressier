@@ -143,14 +143,14 @@ the macro implementations are dozens of times longer than they could be.
 Lastly: often the behavior I provide in this demo is of course exactly the
 opposite of what you want (e.g. if you're using `(\d{3}-(\d{3})-(\d{4})` for
 U.S. phone numbers, you'd better not even think about turning those matches
-into integers. One solution would be to allow type parameters on the extension
-method:
+into integers. One solution would be to allow a target type parameter on the
+extension method:
 
 ``` scala
 val UsPhoneRegex = """(\d{3}-(\d{3})-(\d{4})""".regex[(String, String, String)]
 ```
 
-Or even better, support extraction directly to a case class, and have the type
+Or even better, to support extraction directly to a case class, and have the type
 alignment confirmed at compile time:
 
 ``` scala
