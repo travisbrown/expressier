@@ -140,6 +140,11 @@ approach.
 I'm not using quasiquotes, which keeps things simple (no plugins), but means
 the macro implementations are dozens of times longer than they could be.
 
+For the named group syntax, I'm subclassing `TupleN`, which are case classes.
+This is convenient for a demo, and it's safe, since I'm just adding aliases
+for some of the case class members, so I don't have to worry about breaking
+equality, etc. But it's still probably not a good idea.
+
 Lastly: often the behavior I provide in this demo is of course exactly the
 opposite of what you want (e.g. if you're using `(\d{3}-(\d{3})-(\d{4})` for
 U.S. phone numbers, you'd better not even think about turning those matches
