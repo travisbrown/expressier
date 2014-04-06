@@ -100,7 +100,7 @@ Now suppose we've got a regular expression with some named groups:
 ``` scala
 import expressier._
 
-val Data = """(?<id>[^-]+)-(?<sub>.):(?<value>\d+)""".regex
+val Data = """(?<id>\w+)-(?<sub>.):(?<value>\d+)""".regex
 ```
 
 Now we can access these names as methods on the match:
