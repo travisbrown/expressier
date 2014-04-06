@@ -95,7 +95,7 @@ validation for our regular expression syntax.
 With named groups
 -----------------
 
-Supoose we've got a regular expression with some named groups:
+Now suppose we've got a regular expression with some named groups:
 
 ``` scala
 import expressier._
