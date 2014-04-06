@@ -90,14 +90,14 @@ third: Int = 1203
 ```
 
 The digit groups are now typed as integers, and as a bonus we get compile-time
-checking for our regular expression syntax.
+validation for our regular expression syntax.
 
 With named groups
 -----------------
 
 Supoose we've got a regular expression with some named groups:
 
-```
+``` scala
 import expressier._
 
 val Data = """(?<id>[^-]+)-(?<sub>.):(?<value>\d+)""".regex
