@@ -80,10 +80,10 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val productClassName = newTypeName(c.fresh)
-    val resultNames = List.fill(results.size)(newTermName(c.fresh())) 
+    val resultNames = List.fill(results.size)(newTermName(c.fresh()))
 
     val namedAliases = results.zipWithIndex.flatMap {
-      case (ResultItem(possibleName, _, _), i) => println(possibleName);possibleName.map(name =>
+      case (ResultItem(possibleName, _, _), i) => /*println(possibleName);*/possibleName.map(name =>
         DefDef(
           Modifiers(),
           newTermName(name),
@@ -120,7 +120,7 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val parameterName = newTermName(c.fresh())
-    val resultNames = List.fill(results.size)(newTermName(c.fresh())) 
+    val resultNames = List.fill(results.size)(newTermName(c.fresh()))
 
     Function(
       ValDef(
@@ -152,7 +152,7 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val parameterName = newTermName(c.fresh())
-    val resultNames = List.fill(results.size)(newTermName(c.fresh())) 
+    val resultNames = List.fill(results.size)(newTermName(c.fresh()))
 
     Function(
       ValDef(

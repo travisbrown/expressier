@@ -7,7 +7,10 @@ object Expressier extends Build {
     settings = buildSettings ++ Seq(
       libraryDependencies <+= (scalaVersion)(
         "org.scala-lang" % "scala-reflect" % _
-      )
+      ),
+      libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test",
+      resolvers += Resolver.sonatypeRepo("releases"),
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-M7" cross CrossVersion.full)
     )
   )
 
