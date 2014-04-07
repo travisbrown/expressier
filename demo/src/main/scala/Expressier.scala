@@ -1,7 +1,6 @@
 package expressier
 
 import expressier.internals.NosyPatternParser
-import expressier.utils.ScalaReflectionUtils
 import java.util.regex.Pattern
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -13,14 +12,14 @@ case class Expressier[T <: Product](parse: String => Option[T]) {
   def unapply(s: String): Option[Out] = parse(s)
 }
 
-object Expressier extends NosyPatternParser with ScalaReflectionUtils {
+object Expressier extends NosyPatternParser {
   def regex(pattern: String) = macro regexSimpleImpl
 
   def regexStringContextImpl(c: Context)(): c.Expr[Any] = {
     import c.universe._
 
     val patternString = c.prefix.tree match {
-      case Apply(_, List(Apply(_, List(Literal(Constant(s: String)))))) => s
+      case q"${_}(${_}(${s: String}))" => s
     }
 
     create(c)(patternString)
@@ -30,7 +29,7 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val patternString = c.prefix.tree match {
-      case Apply(_, List(Literal(Constant(s: String)))) => s
+      case q"${_}(${s: String})" => s
     }
 
     create(c)(patternString)
@@ -40,14 +39,16 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val patternString = pattern.tree match {
-      case Literal(Constant(s: String)) => s
+      case q"${s: String}" => s
     }
 
     create(c)(patternString)
   }
 
-  private[this] def tupleTypeName(u: Universe)(n: Int) =
-    u.Select(u.Ident(u.newTermName("scala")), u.newTypeName(f"Tuple${n}%d"))
+  private[this] def tupleTypeName(u: Universe)(n: Int) = {
+    import u._
+    tq"_root_.scala.${newTypeName("Tuple" + n)}"
+  }
 
   private[this] def create(c: Context)(patternString: String): c.Expr[Any] = {
     import c.universe.{ Try => _, _ }
@@ -57,59 +58,35 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     ).fold(
       c.abort(c.enclosingPosition, "Can't parse this regular expression!")
     ) { results =>
-      val (productClassName, productClassDef) = createProductClass(c)(results)
-
-      c.Expr[Any](
-        Block(
-          productClassDef :: Nil,
-          Apply(
-            Select(
-              Select(Ident(newTermName("expressier")), newTermName("Expressier")),
-              newTermName("apply")
-            ),
-            createParseFunction(c)(patternString, results, productClassName) :: Nil
-          )
-        )
-      )
+      val productClassDef = createProductClass(c)(results)
+      c.Expr[Any](q"""
+        $productClassDef
+        _root_.expressier.Expressier(${createParseFunction(c)(patternString, results, productClassDef.name)})
+      """)
     }
   }
 
   private[this] def createProductClass(c: Context)(
     results: List[ResultItem[c.universe.type]]
-  ): (c.universe.TypeName, c.universe.Tree) = {
+  ): c.universe.ClassDef = {
     import c.universe._
 
     val productClassName = newTypeName(c.fresh)
     val resultNames = List.fill(results.size)(newTermName(c.fresh()))
 
+    val superClass = tupleTypeName(c.universe)(results.size)
+    val ctorParams = resultNames.zip(results.map(_.tpe)).map { case (name, tpe) => q"val $name: $tpe" }
     val namedAliases = results.zipWithIndex.flatMap {
-      case (ResultItem(possibleName, _, _), i) => /*println(possibleName);*/possibleName.map(name =>
-        DefDef(
-          Modifiers(),
-          newTermName(name),
-          Nil,
-          Nil,
-          TypeTree(),
-          Select(This(productClassName), newTermName(f"_${i + 1}%d"))
-        )
-      )
+      case (ResultItem(possibleName, _, _), i) =>
+        val alias = newTermName(f"_${i + 1}%d")
+        possibleName.map(name => q"def ${newTermName(name)} = $productClassName.this.$alias")
     }
 
-    (
-      productClassName,
-      ClassDef(
-        Modifiers(),
-        productClassName,
-        Nil,
-        Template(
-          tupleTypeName(c.universe)(results.size) :: Nil,
-          emptyValDef,
-          constructorWithSameParameters(c.universe)(
-            resultNames.zip(results.map(_.tpe))
-          ) :: namedAliases
-        )
-      )
-    )
+    q"""
+      class $productClassName(..$ctorParams) extends $superClass(..$resultNames) {
+        ..$namedAliases
+      }
+    """
   }
 
   private[this] def createParseFunction(c: Context)(
@@ -120,29 +97,9 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
     import c.universe._
 
     val parameterName = newTermName(c.fresh())
-    val resultNames = List.fill(results.size)(newTermName(c.fresh()))
+    val converted = createConversion(c)(results, productClassName)
 
-    Function(
-      ValDef(
-        Modifiers(Flag.PARAM),
-        parameterName,
-        TypeTree(),
-        EmptyTree
-      ) :: Nil,
-      Apply(
-        Select(
-          Apply(
-            Select(
-              Select(Literal(Constant(pattern)), newTermName("r")),
-              newTermName("unapplySeq")
-            ),
-            Ident(parameterName) :: Nil
-          ),
-          newTermName("map")
-        ),
-        createConversion(c)(results, productClassName) :: Nil
-      )
-    )
+    q"(($parameterName: ${tq""}) => $pattern.r.unapplySeq($parameterName).map($converted))"
   }
 
   private[this] def createConversion(c: Context)(
@@ -153,31 +110,18 @@ object Expressier extends NosyPatternParser with ScalaReflectionUtils {
 
     val parameterName = newTermName(c.fresh())
     val resultNames = List.fill(results.size)(newTermName(c.fresh()))
+    val resultPatterns = resultNames.map(n => Bind(n, Ident(nme.WILDCARD)))
+    val converted = results.zip(resultNames).map {
+      case (ResultItem(_, _, converter), name) => converter(Ident(name))
+    }
 
-    Function(
-      ValDef(
-        Modifiers(Flag.PARAM),
-        parameterName,
-        TypeTree(),
-        EmptyTree
-      ) :: Nil,
-      Match(
-        Ident(parameterName),
-        CaseDef(
-          Apply(
-            reify(List).tree,
-            resultNames.map(name => Bind(name, Ident(nme.WILDCARD)))
-          ),
-          EmptyTree,
-          Apply(
-            Select(New(Ident(productClassName)), nme.CONSTRUCTOR),
-            results.zip(resultNames).map {
-              case (ResultItem(_, _, converter), name) => converter(Ident(name))
-            }
-          )
-        ) :: Nil
-      )
-    )
+    q"""
+      (($parameterName: ${tq""}) => {
+        $parameterName match {
+          case List(..$resultPatterns) => new $productClassName(..$converted)
+        }
+      })
+    """
   }
 }
 

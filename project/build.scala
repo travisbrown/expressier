@@ -10,7 +10,8 @@ object Expressier extends Build {
       ),
       libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test",
       resolvers += Resolver.sonatypeRepo("releases"),
-      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-M7" cross CrossVersion.full)
+      addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-M7" cross CrossVersion.full),
+      libraryDependencies += "org.scalamacros" %% "quasiquotes" % "2.0.0-M7"
     )
   )
 
