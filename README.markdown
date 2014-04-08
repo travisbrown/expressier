@@ -137,9 +137,6 @@ of horrible work with reflection on private fields and non-public classes
 inside `Pattern`. This is a limitation of the ecosystem, though, not of the
 approach.
 
-I'm not using quasiquotes, which keeps things simple (no plugins), but means
-the macro implementations are dozens of times longer than they could be.
-
 For the named group syntax, I'm subclassing `TupleN`, which are case classes.
 This is convenient for a demo, and it's safe, since I'm just adding aliases
 for some of the case class members, so I don't have to worry about breaking
