@@ -1,6 +1,8 @@
 Type providers for regular expressions
 ======================================
 
+[![Build status](https://img.shields.io/travis/travisbrown/expressier/master.svg)](http://travis-ci.org/travisbrown/expressier)
+
 This is a quick proof-of-concept demonstration of what a type provider for
 regular expressions might look like. There are currently lots of limitations
 and problems with the implementation, and essentially no documentation or
