@@ -1,14 +1,13 @@
-package expressier.internals
+package io.expressier.internals
 
-import expressier.{ PatternParser, StandardConversions }
-import expressier.utils.JavaReflectionUtils
+import io.expressier.PatternParser
+import io.expressier.utils.JavaReflectionUtils
 import java.util.{ Map => JMap }
 import java.util.regex.Pattern
 import scala.collection.JavaConverters._
 import scala.reflect.api.Universe
 
-trait NosyPatternParser extends PatternParser
-  with StandardConversions with JavaReflectionUtils {
+class NosyPatternParser extends PatternParser with JavaReflectionUtils {
   lazy val patternClass = classOf[Pattern]
   lazy val ctypeClass = Class.forName("java.util.regex.Pattern$Ctype")
   lazy val curlyClass = Class.forName("java.util.regex.Pattern$Curly")
@@ -52,7 +51,7 @@ trait NosyPatternParser extends PatternParser
   def getASCIICode(name: String): Int = {
     val field = asciiClass.getDeclaredField(name)
     field.setAccessible(true)
-    field.get().asInstanceOf[Int]
+    field.get(()).asInstanceOf[Int]
   }
 
   lazy val digitCode = getASCIICode("DIGIT")
@@ -71,7 +70,7 @@ trait NosyPatternParser extends PatternParser
 
   def getNodes(pattern: Pattern): List[Any] =
     getRest(patternRoot.get(pattern))
-  
+
   sealed trait Group
   case class CandidateGroup(contents: List[Any]) extends Group
   case object OpaqueGroup extends Group
@@ -97,8 +96,6 @@ trait NosyPatternParser extends PatternParser
   )
 
   def parsePattern(u: Universe)(pattern: Pattern): Option[List[ResultItem[u.type]]] = {
-    import u._
-
     val names = getNames(pattern)
     val groups = capturedGroups(pattern)
 
