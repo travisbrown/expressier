@@ -1,9 +1,7 @@
 # expressier
 
-[![Build status](https://img.shields.io/travis/travisbrown/expressier/master.svg)](http://travis-ci.org/travisbrown/expressier)
-[![Coverage status](https://img.shields.io/codecov/c/github/travisbrown/expressier/master.svg)](https://codecov.io/github/travisbrown/expressier)
-[![Gitter](https://img.shields.io/badge/gitter-join%20chat-green.svg)](https://gitter.im/travisbrown/expressier)
-[![Maven Central](https://img.shields.io/maven-central/v/io.expressier/expressier-core_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/io.expressier/expressier-core_2.11)
+[![Build status](https://travis-ci.org/travisbrown/expressier.svg?branch=master)](https://travis-ci.org/travisbrown/expressier)
+[![Coverage status](http://codecov.io/github/travisbrown/expressier/coverage.svg?branch=master)](http://codecov.io/github/travisbrown/expressier?branch=master)
 
 ## tl;dr
 
