@@ -1,6 +1,4 @@
-package expressier.utils
-
-import scala.reflect.api.Universe
+package io.expressier.utils
 
 trait JavaReflectionUtils {
   protected def getField(clazz: Class[_], name: String) = {
