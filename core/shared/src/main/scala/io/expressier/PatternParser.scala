@@ -18,9 +18,13 @@ trait PatternParser {
   def stringResult(u: Universe)(name: Option[String]): ResultItem[u.type] =
     ResultItem[u.type](name, u.typeOf[String], tree => tree)
 
-  def integerResult(u: Universe)(name: Option[String]): ResultItem[u.type] =
-    ResultItem[u.type](name, u.typeOf[Int], tree => u.Select(tree, u.newTermName("toInt")))
+  def integerResult(u: Universe)(name: Option[String]): ResultItem[u.type] = {
+    import u._
+    ResultItem[u.type](name, typeOf[Int], tree => q"$tree.toInt")
+  }
 
-  def characterResult(u: Universe)(name: Option[String]): ResultItem[u.type] =
-    ResultItem[u.type](name, u.typeOf[Char], tree => u.Select(tree, u.newTermName("head")))
+  def characterResult(u: Universe)(name: Option[String]): ResultItem[u.type] = {
+    import u._
+    ResultItem[u.type](name, typeOf[Char], tree => q"$tree.head")
+  }
 }
