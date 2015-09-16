@@ -73,7 +73,7 @@ lazy val coreBase = crossProject.in(file("core"))
   .settings(
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.2.5",
-      "org.typelevel" %%% "macro-compat" % "1.0.1",
+      "org.typelevel" %%% "macro-compat" % "1.0.2",
       "org.scalatest" %%% "scalatest" % "3.0.0-M7" % "test"
     )
   )

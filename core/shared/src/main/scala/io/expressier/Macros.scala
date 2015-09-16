@@ -8,14 +8,14 @@ import shapeless.HList
 class WhiteboxMacros(val c: whitebox.Context) {
   import patternParser.ResultItem
   import c.universe._
-  import compat._
 
   private[this] val expressTC = c.typeOf[Express[_]].typeConstructor
   private[this] val symTpe = c.typeOf[scala.Symbol]
   private[this] val tagTC = c.typeOf[shapeless.tag.@@[_, _]].typeConstructor
   private[this] val taggedSym = typeOf[shapeless.tag.Tagged[_]].typeConstructor.typeSymbol
 
-  private[this] def stringSingletonTpe(s: String): c.Type = ConstantType(Constant(s))
+  private[this] def stringSingletonTpe(s: String): c.Type =
+    internal.constantType(Constant(s))
   private[this] def symbolSingletonTpe(s: String): c.Type =
     appliedType(tagTC, List(symTpe, stringSingletonTpe(s)))
 
@@ -52,7 +52,7 @@ class WhiteboxMacros(val c: whitebox.Context) {
           tq"""_root_.shapeless.::[_root_.shapeless.labelled.FieldType[$nameTpe, $tpe], $acc]"""
       }
 
-      val resultNames = List.fill(results.size)(TermName(c.fresh()))
+      val resultNames = List.fill(results.size)(TermName(c.freshName))
       val resultPatterns = resultNames.map(n => Bind(n, Ident(termNames.WILDCARD)))
 
       val converted = results.zip(resultNames).foldRight(q"_root_.shapeless.HNil": c.Tree) {
@@ -87,9 +87,9 @@ class WhiteboxMacros(val c: whitebox.Context) {
 @macrocompat.bundle
 class BlackboxMacros(val c: blackbox.Context) {
   import c.universe._
-  import compat._
 
-  private[this] def stringSingletonTpe(s: String): c.Type = ConstantType(Constant(s))
+  private[this] def stringSingletonTpe(s: String): c.Type =
+    internal.constantType(Constant(s))
 
   def stringImpl[T](implicit T: c.WeakTypeTag[T]): c.Expr[Express.To[T]] = {
     val patternString = c.prefix.tree match {
